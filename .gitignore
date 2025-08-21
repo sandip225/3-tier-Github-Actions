@@ -1,0 +1,23 @@
+# Unwanted project directories
+../EKS-Terra/
+../K8S_Project/
+../cloud-native-monitoring-app.zip
+../cloud-native-monitoring-app/
+../flask-app/
+../kubestart/
+../lamda/
+../python-for-devops-main/
+../retail-store-sample-app/
+../scm2.0-main/
+../terraform-for-devops/
+../terraform-jenkins/
+../wanderlust-devops/
+
+# Common files to ignore
+.DS_Store
+*.log
+node_modules/
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
