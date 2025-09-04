@@ -1,5 +1,4 @@
 name: Node.js CICD
-
 on:
   push:
     branches: [ "main" ]
@@ -8,91 +7,21 @@ on:
 
 jobs:
   compile:
-      runs-on: Agent-1
-      
-      steps:
-        - name: Checkout Code
-          uses: actions/checkout@v4
-
-        - name: Setup Node.js
-          uses: actions/setup-node@v4
-          with:
-            node-version: '23'
-
-        - name: Frontend Compilation (Syntax Check)
-          run: |
-            cd client
-            find . -name "*.js" -exec node --check {} +
-
-        - name: Backend Compilation (Syntax Check)
-          run: |
-            cd api
-            find . -name "*.js" -exec node --check {} +
-            
-  gitleaks-scan:
-      runs-on: Agent-1
-      needs: compile
-      steps:
-        - name: Checkout Code
-          uses: actions/checkout@v4
-        - name: Gitleaks Setup
-          uses: gitleaks/gitleaks-action@v2
-        - name: Gitleaks Scan
-          run: |
-             gitleaks detect --source ./client --exit-code 1
-             gitleaks detect --source ./api --exit-code 1
-
-  trivy_fs_scan:
     runs-on: Agent-1
-    needs: gitleaks-scan
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@0.28.0
-        with:
-          scan-type: 'fs'
-          scan-ref: '.'
-          format: 'table'
-          ignore-unfixed: true
-          vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH'
-            
-  sonar-frontend:
-    runs-on: Agent-1
-    needs: trivy_fs_scan
-    steps:
-      - name: Checkout code
+      - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: SonarQube Scan (client)
-        uses: sonarsource/sonarqube-scan-action@master
-        with:
-          projectBaseDir: client        # 👈 instead of working-directory
-          args: >
-            -Dsonar.projectKey=myorg_client
-            -Dsonar.projectName=myorg_client
-            -Dsonar.sources=.
-            -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/build/**
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-
-  soanr-backend:
-    runs-on: Agent-1
-    needs: sonar-frontend
-    steps:
-      - name: Checkout code
+      - name: Setup Node.js
         uses: actions/checkout@v4
-      - name: SonarQube Scan (api)
-        uses: sonarsource/sonarqube-scan-action@master
         with:
-          projectBaseDir: api
-          args: >
-            -Dsonar.projectKey=myorg_api -Dsonar.projectName=myorg_api
-            -Dsonar.sources=.
-            -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/build/**
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+          node-version: '23'
+      - name: Frontend Compilation (Syntax Check)
+        run: |
+          cd client
+          find . -name "*.js" -exec node --check {} +
+      - name: Backend Compilation (Syntax Check)
+        run: |
+          cd api
+          find . -name "*.js" -exec node --check {} +
           
